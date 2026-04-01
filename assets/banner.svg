@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200" viewBox="0 0 800 200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#16213e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f3460;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e94560;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff6b6b;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="200" rx="12" fill="url(#bg)"/>
+
+  <!-- Accent line -->
+  <rect x="0" y="188" width="800" height="12" rx="0" fill="url(#accent)" opacity="0.8"/>
+
+  <!-- Bell icon -->
+  <g transform="translate(80, 60)" fill="#e94560" filter="url(#glow)">
+    <path d="M40 0C17.9 0 0 17.9 0 40c0 16.5 10 30.7 24.3 36.7L20 84c-1.3 2.2.3 5 2.9 5h34.2c2.6 0 4.2-2.8 2.9-5l-4.3-7.3C70 70.7 80 56.5 80 40 80 17.9 62.1 0 40 0zm0 12c15.5 0 28 12.5 28 28 0 11.8-7.3 21.9-17.6 26l-2.4 1.2L52.5 76h-25L32 67.2l-2.4-1.2C19.3 61.9 12 51.8 12 40c0-15.5 12.5-28 28-28z" transform="scale(0.9)"/>
+    <circle cx="40" cy="95" r="6" opacity="0.9"/>
+  </g>
+
+  <!-- Title -->
+  <text x="200" y="75" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700" fill="#ffffff" letter-spacing="1">Claude Code</text>
+  <text x="200" y="115" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700" fill="#e94560" letter-spacing="1">Notification</text>
+
+  <!-- Subtitle -->
+  <text x="200" y="150" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#8892b0" letter-spacing="0.5">Windows toast notifications with click-to-focus</text>
+
+  <!-- Decorative dots -->
+  <circle cx="720" cy="40" r="3" fill="#e94560" opacity="0.4"/>
+  <circle cx="740" cy="55" r="2" fill="#e94560" opacity="0.3"/>
+  <circle cx="710" cy="65" r="4" fill="#e94560" opacity="0.2"/>
+  <circle cx="750" cy="80" r="2" fill="#e94560" opacity="0.5"/>
+  <circle cx="730" cy="100" r="3" fill="#e94560" opacity="0.3"/>
+  <circle cx="760" cy="35" r="2" fill="#e94560" opacity="0.4"/>
+  <circle cx="700" cy="90" r="2" fill="#e94560" opacity="0.2"/>
+</svg>
