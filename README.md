@@ -73,10 +73,37 @@
 
 ### Install with Claude Code
 
-Just paste this prompt into Claude Code and let it handle everything:
+Just paste one of these prompts into Claude Code and let it handle everything:
+
+**Option A** — Using the installer script (recommended):
 
 ```
 Clone the repo https://github.com/MeninoNias/claude-code-notification and run the install.ps1 script to set up Windows toast notifications with click-to-focus for Claude Code.
+```
+
+**Option B** — Without cloning (Claude does everything from scratch):
+
+```
+Set up Windows toast notifications for Claude Code with click-to-focus. Here's what to do:
+
+1. Install BurntToast PowerShell module if not present (Install-PackageProvider NuGet first, trust PSGallery)
+
+2. Create these files in ~/.claude/:
+   - show-toast.ps1: notification script that walks the process tree to find the terminal HWND, builds a BurntToast toast with protocol activation (launch URI "claude-focus://{HWND}"), tries WinRT API with AppId 'Claude.Code' for PS 5.1 and falls back to Submit-BTNotification for PS 7+
+   - claude-focus.ps1: receives "claude-focus://{HWND}" URI, uses Win32 API (SetForegroundWindow, BringWindowToTop, AttachThreadInput, keybd_event Alt trick, SetWindowPos TOPMOST flash, WScript.Shell AppActivate) to bring the window to focus
+   - claude-focus.vbs: wrapper that runs claude-focus.ps1 completely hidden via WScript.Shell.Run with window style 0
+
+3. Register protocol handler "claude-focus://" in registry (HKCU:\Software\Classes\claude-focus) pointing to wscript.exe running claude-focus.vbs
+
+4. Create Start Menu shortcut with AUMID 'Claude.Code' using New-BTShortcut (or manual fallback)
+
+5. Add hooks to ~/.claude/settings.json (merge, don't replace):
+   - Stop: reads stdin JSON, gets last_assistant_message, calls show-toast.ps1 with project name and message summary
+   - Notification: reads stdin JSON, gets message, calls show-toast.ps1
+   - SubagentStop: same as Stop but with "Claude Code Agent" title
+   All hooks use shell "powershell" and read stdin via [System.IO.StreamReader]::new([Console]::OpenStandardInput())
+
+Reference repo for implementation details: https://github.com/MeninoNias/claude-code-notification
 ```
 
 ### Manual Install
