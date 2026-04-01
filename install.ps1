@@ -38,6 +38,9 @@ if (-not (Test-Path $claudeDir)) {
 # --- Install BurntToast if missing ---
 Write-Host "`n[1/5] Checking BurntToast module..." -ForegroundColor Yellow
 if (-not (Get-Module -ListAvailable -Name BurntToast)) {
+    Write-Host "  Installing NuGet provider (if needed)..." -ForegroundColor Gray
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force | Out-Null
+    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
     Write-Host "  Installing BurntToast..." -ForegroundColor Gray
     Install-Module -Name BurntToast -Scope CurrentUser -Force -AllowClobber
     Write-Host "  BurntToast installed." -ForegroundColor Green

@@ -82,8 +82,11 @@
 ```powershell
 git clone https://github.com/MeninoNias/claude-code-notification.git
 cd claude-code-notification
-.\install.ps1
+powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
+
+> **No admin required.** All changes are user-level only (HKCU registry, user profile, Start Menu).
+> The `-ExecutionPolicy Bypass` flag is needed because Windows blocks `.ps1` scripts by default.
 
 That's it! The installer handles everything:
 
