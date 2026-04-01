@@ -71,13 +71,17 @@
 
 ## Quick Start
 
-### Prerequisites
+### Install with Claude Code
 
-- **Windows 10/11**
-- **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** installed
-- **PowerShell 5.1+** (included with Windows)
+Just paste this prompt into Claude Code and let it handle everything:
 
-### Install
+```
+Clone the repo https://github.com/MeninoNias/claude-code-notification and run the install.ps1 script to set up Windows toast notifications with click-to-focus for Claude Code.
+```
+
+### Manual Install
+
+**Prerequisites:** Windows 10/11, [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed, PowerShell 5.1+
 
 ```powershell
 git clone https://github.com/MeninoNias/claude-code-notification.git
