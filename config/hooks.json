@@ -1,0 +1,38 @@
+{
+  "Stop": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "try { $sr = [System.IO.StreamReader]::new([Console]::OpenStandardInput(), [Text.Encoding]::UTF8); $data = $sr.ReadToEnd() | ConvertFrom-Json; $sr.Close(); $cwd = if ($data.cwd) { $data.cwd } else { $PWD.Path }; $project = Split-Path $cwd -Leaf; if ($project -match '^worktrees$|^\\.' ) { $project = Split-Path (Split-Path $cwd) -Leaf }; $raw = if ($data.last_assistant_message) { $data.last_assistant_message } else { 'Task completed.' }; $msg = ($raw -replace '[*`#>|]{2,}','' -replace '\\s+',' ').Trim(); if ($msg.Length -gt 100) { $msg = $msg.Substring(0,100) + '...' }; & \"$env:USERPROFILE\\.claude\\show-toast.ps1\" -Title \"Claude Code - $project\" -Message $msg -Icon \"$env:USERPROFILE\\.claude\\claude-icon.png\" } catch { & \"$env:USERPROFILE\\.claude\\show-toast.ps1\" -Title 'Claude Code' -Message 'Task completed.' -Icon \"$env:USERPROFILE\\.claude\\claude-icon.png\" }",
+          "shell": "powershell"
+        }
+      ]
+    }
+  ],
+  "Notification": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "try { $sr = [System.IO.StreamReader]::new([Console]::OpenStandardInput(), [Text.Encoding]::UTF8); $data = $sr.ReadToEnd() | ConvertFrom-Json; $sr.Close(); $msg = if ($data.message) { $data.message } else { 'Awaiting permission...' }; if ($msg.Length -gt 120) { $msg = $msg.Substring(0,120) + '...' }; $cwd = if ($data.cwd) { $data.cwd } else { $PWD.Path }; $project = Split-Path $cwd -Leaf; if ($project -match '^worktrees$|^\\.' ) { $project = Split-Path (Split-Path $cwd) -Leaf }; & \"$env:USERPROFILE\\.claude\\show-toast.ps1\" -Title \"Claude Code - $project\" -Message $msg -Icon \"$env:USERPROFILE\\.claude\\claude-icon.png\" } catch { & \"$env:USERPROFILE\\.claude\\show-toast.ps1\" -Title 'Claude Code' -Message 'Awaiting permission...' -Icon \"$env:USERPROFILE\\.claude\\claude-icon.png\" }",
+          "shell": "powershell"
+        }
+      ]
+    }
+  ],
+  "SubagentStop": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "try { $sr = [System.IO.StreamReader]::new([Console]::OpenStandardInput(), [Text.Encoding]::UTF8); $data = $sr.ReadToEnd() | ConvertFrom-Json; $sr.Close(); $cwd = if ($data.cwd) { $data.cwd } else { $PWD.Path }; $project = Split-Path $cwd -Leaf; if ($project -match '^worktrees$|^\\.' ) { $project = Split-Path (Split-Path $cwd) -Leaf }; $raw = if ($data.last_assistant_message) { $data.last_assistant_message } else { 'Agent task completed.' }; $msg = ($raw -replace '[*`#>|]{2,}','' -replace '\\s+',' ').Trim(); if ($msg.Length -gt 100) { $msg = $msg.Substring(0,100) + '...' }; & \"$env:USERPROFILE\\.claude\\show-toast.ps1\" -Title \"Claude Code Agent - $project\" -Message $msg -Icon \"$env:USERPROFILE\\.claude\\claude-icon.png\" } catch { & \"$env:USERPROFILE\\.claude\\show-toast.ps1\" -Title 'Claude Code Agent' -Message 'Agent task completed.' -Icon \"$env:USERPROFILE\\.claude\\claude-icon.png\" }",
+          "shell": "powershell"
+        }
+      ]
+    }
+  ]
+}
