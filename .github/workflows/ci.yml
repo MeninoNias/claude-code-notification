@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  validate:
+    name: Validate Scripts
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check PowerShell syntax
+        shell: pwsh
+        run: |
+          $hasError = $false
+          Get-ChildItem -Path . -Filter *.ps1 -Recurse | ForEach-Object {
+              $tokens = $null; $errors = $null
+              [System.Management.Automation.Language.Parser]::ParseFile(
+                  $_.FullName, [ref]$tokens, [ref]$errors
+              )
+              if ($errors.Count -gt 0) {
+                  foreach ($err in $errors) {
+                      Write-Host "::error file=$($_.FullName),line=$($err.Extent.StartLineNumber)::$($err.Message)"
+                  }
+                  $hasError = $true
+              } else {
+                  Write-Host "OK: $($_.Name)"
+              }
+          }
+          if ($hasError) { exit 1 }
+
+      - name: Validate JSON
+        shell: pwsh
+        run: |
+          $hasError = $false
+          Get-ChildItem -Path . -Filter *.json -Recurse | ForEach-Object {
+              try {
+                  $null = Get-Content $_.FullName -Raw | ConvertFrom-Json
+                  Write-Host "OK: $($_.Name)"
+              } catch {
+                  Write-Host "::error file=$($_.FullName)::Invalid JSON: $_"
+                  $hasError = $true
+              }
+          }
+          if ($hasError) { exit 1 }
