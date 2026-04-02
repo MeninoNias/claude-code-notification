@@ -37,13 +37,15 @@ try {
     $visual = New-BTVisual -BindingGeneric $binding
     $content = New-BTContent -Visual $visual -Launch "claude-focus://$hwndVal" -ActivationType Protocol
 
-    # PS 5.1: WinRT API with custom AppId 'Claude.Code'
+    # PS 5.1: WinRT API with custom AppId 'Claude Code'
     $null = [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom, ContentType = WindowsRuntime]
     $null = [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
+    # Strip curly braces from BurntToast data binding format: {text} -> text
+    $xmlContent = $content.GetContent() -replace '>\{', '>' -replace '\}<', '<'
     $xdoc = [Windows.Data.Xml.Dom.XmlDocument]::new()
-    $xdoc.LoadXml($content.GetContent())
+    $xdoc.LoadXml($xmlContent)
     $toast = [Windows.UI.Notifications.ToastNotification]::new($xdoc)
-    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Claude.Code').Show($toast)
+    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Claude Code').Show($toast)
 
 } catch {
     Import-Module BurntToast

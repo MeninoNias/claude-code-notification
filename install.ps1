@@ -91,7 +91,7 @@ $shortcutPath = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Cl
 Import-Module BurntToast
 if (Get-Command New-BTShortcut -ErrorAction SilentlyContinue) {
     $iconPath = Join-Path $claudeDir 'claude-icon.png'
-    New-BTShortcut -AppId 'Claude.Code' -ShortcutPath $shortcutPath -DisplayName 'Claude Code' -IconPath $iconPath
+    New-BTShortcut -AppId 'Claude Code' -ShortcutPath $shortcutPath -DisplayName 'Claude Code' -IconPath $iconPath
     Write-Host "  Shortcut created via BurntToast." -ForegroundColor Green
 } else {
     # Fallback: create shortcut manually
