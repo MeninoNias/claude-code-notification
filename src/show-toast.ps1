@@ -1,8 +1,22 @@
 param(
     [string]$Title,
     [string]$Message,
-    [string]$Icon
+    [string]$Icon,
+    [long]$Hwnd = 0
 )
+
+# Compute HWND early, before any PS version re-invoke, so the process tree is correct
+if ($Hwnd -eq 0) {
+    try {
+        $p = Get-Process -Id $PID
+        while ($p -and $p.MainWindowHandle -eq [IntPtr]::Zero) {
+            $ppid = (Get-CimInstance Win32_Process -Filter "ProcessId=$($p.Id)").ParentProcessId
+            if (-not $ppid -or $ppid -eq 0) { break }
+            $p = Get-Process -Id $ppid -ErrorAction SilentlyContinue
+        }
+        if ($p -and $p.MainWindowHandle -ne [IntPtr]::Zero) { $Hwnd = $p.MainWindowHandle.ToInt64() }
+    } catch {}
+}
 
 # PS 7+ can't load WinRT types natively. Re-invoke in PS 5.1 where it works.
 if ($PSVersionTable.PSVersion.Major -ge 7) {
@@ -13,19 +27,12 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
     # Find BurntToast's module directory and inject into PS 5.1 command
     $btBase = (Get-Module -ListAvailable BurntToast -ErrorAction SilentlyContinue | Select-Object -First 1).ModuleBase
     $btDir = if ($btBase) { (Split-Path (Split-Path $btBase)) -replace "'", "''" } else { '' }
-    powershell.exe -ExecutionPolicy Bypass -Command "`$env:PSModulePath += ';$btDir'; & '$scriptPath' -Title '$eTitle' -Message '$eMessage' -Icon '$eIcon'"
+    powershell.exe -ExecutionPolicy Bypass -Command "`$env:PSModulePath += ';$btDir'; & '$scriptPath' -Title '$eTitle' -Message '$eMessage' -Icon '$eIcon' -Hwnd $Hwnd"
     return
 }
 
 try {
-    # Find terminal window by walking up the process tree
-    $p = Get-Process -Id $PID
-    while ($p -and $p.MainWindowHandle -eq [IntPtr]::Zero) {
-        $ppid = (Get-CimInstance Win32_Process -Filter "ProcessId=$($p.Id)").ParentProcessId
-        if (-not $ppid -or $ppid -eq 0) { break }
-        $p = Get-Process -Id $ppid -ErrorAction SilentlyContinue
-    }
-    $hwndVal = if ($p -and $p.MainWindowHandle -ne [IntPtr]::Zero) { $p.MainWindowHandle.ToInt64() } else { 0 }
+    $hwndVal = $Hwnd
 
     Import-Module BurntToast
 
