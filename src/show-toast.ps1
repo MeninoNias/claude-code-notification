@@ -4,6 +4,19 @@ param(
     [string]$Icon
 )
 
+# PS 7+ can't load WinRT types natively. Re-invoke in PS 5.1 where it works.
+if ($PSVersionTable.PSVersion.Major -ge 7) {
+    $scriptPath = $MyInvocation.MyCommand.Path
+    $eTitle = $Title -replace "'", "''"
+    $eMessage = $Message -replace "'", "''"
+    $eIcon = $Icon -replace "'", "''"
+    # Find BurntToast's module directory and inject into PS 5.1 command
+    $btBase = (Get-Module -ListAvailable BurntToast -ErrorAction SilentlyContinue | Select-Object -First 1).ModuleBase
+    $btDir = if ($btBase) { (Split-Path (Split-Path $btBase)) -replace "'", "''" } else { '' }
+    powershell.exe -ExecutionPolicy Bypass -Command "`$env:PSModulePath += ';$btDir'; & '$scriptPath' -Title '$eTitle' -Message '$eMessage' -Icon '$eIcon'"
+    return
+}
+
 try {
     # Find terminal window by walking up the process tree
     $p = Get-Process -Id $PID
@@ -24,18 +37,13 @@ try {
     $visual = New-BTVisual -BindingGeneric $binding
     $content = New-BTContent -Visual $visual -Launch "claude-focus://$hwndVal" -ActivationType Protocol
 
-    # Try custom AppId 'Claude.Code' via WinRT (works in PS 5.1)
-    try {
-        $null = [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom, ContentType = WindowsRuntime]
-        $null = [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
-        $xdoc = [Windows.Data.Xml.Dom.XmlDocument]::new()
-        $xdoc.LoadXml($content.GetContent())
-        $toast = [Windows.UI.Notifications.ToastNotification]::new($xdoc)
-        [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Claude.Code').Show($toast)
-    } catch {
-        # PS 7: BurntToast handles WinRT internally - protocol activation preserved in XML
-        Submit-BTNotification -Content $content
-    }
+    # PS 5.1: WinRT API with custom AppId 'Claude.Code'
+    $null = [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom, ContentType = WindowsRuntime]
+    $null = [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
+    $xdoc = [Windows.Data.Xml.Dom.XmlDocument]::new()
+    $xdoc.LoadXml($content.GetContent())
+    $toast = [Windows.UI.Notifications.ToastNotification]::new($xdoc)
+    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Claude.Code').Show($toast)
 
 } catch {
     Import-Module BurntToast

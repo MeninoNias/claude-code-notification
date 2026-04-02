@@ -55,9 +55,9 @@ public class WinFocus {
     [WinFocus]::SetWindowPos($hwnd, [WinFocus]::HWND_NOTOPMOST, 0, 0, 0, 0, $flags) | Out-Null
 
     # Method 3: WScript.Shell AppActivate as last resort
-    $pid = 0
-    [WinFocus]::GetWindowThreadProcessId($hwnd, [ref]$pid) | Out-Null
-    if ($pid -gt 0) {
-        try { (New-Object -ComObject WScript.Shell).AppActivate($pid) | Out-Null } catch {}
+    $winPid = 0
+    [WinFocus]::GetWindowThreadProcessId($hwnd, [ref]$winPid) | Out-Null
+    if ($winPid -gt 0) {
+        try { (New-Object -ComObject WScript.Shell).AppActivate($winPid) | Out-Null } catch {}
     }
 } catch {}

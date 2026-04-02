@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-04-02
+
+### Fixed
+- Click-to-focus not working when hooks run in PowerShell 7 (pwsh) — now delegates to PS 5.1 with BurntToast module path injection
+- `$pid` read-only variable conflict in `claude-focus.ps1` — renamed to `$winPid`
+- Parameter quoting when delegating from PS 7 to PS 5.1 (titles with spaces were splitting)
+
 ## [1.0.0] - 2026-04-01
 
 ### Added
@@ -20,4 +27,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Settings.json merge preserving existing user configuration
 - GitHub issue and PR templates
 
+[1.0.1]: https://github.com/MeninoNias/claude-code-notification/releases/tag/v1.0.1
 [1.0.0]: https://github.com/MeninoNias/claude-code-notification/releases/tag/v1.0.0
