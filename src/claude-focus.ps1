@@ -44,14 +44,22 @@ public class WinFocus {
 
     $hwnd = [IntPtr]::new($hwndVal)
 
-    if (-not [WinFocus]::IsWindow($hwnd)) { Log "[FOCUS] ERR hwnd=$hwndVal gone"; exit }
+    if (-not [WinFocus]::IsWindow($hwnd)) { Log "[FOCUS] STALE hwnd=$hwndVal gone"; exit }
 
-    # Reject known bad window classes
+    # Only allow known terminal window classes (HWNDs recycle after restart)
     $sb = [System.Text.StringBuilder]::new(256)
     [WinFocus]::GetClassName($hwnd, $sb, 256) | Out-Null
     $winClass = $sb.ToString()
-    $badClasses = @('ThumbnailDeviceHelperWnd', 'Shell_TrayWnd', 'WorkerW', 'Progman', 'NotifyIconOverflowWindow')
-    if ($winClass -in $badClasses) { Log "[FOCUS] SKIP class=$winClass"; exit }
+    $terminalClasses = @(
+        'CASCADIA_HOSTING_WINDOW_CLASS',  # Windows Terminal
+        'ConsoleWindowClass',              # Classic cmd/conhost
+        'PseudoConsoleWindow',             # Pseudo console
+        'mintty',                          # Git Bash / mintty
+        'VirtualConsoleClass',             # ConEmu
+        'Chrome_WidgetWin_1',              # VS Code / Electron terminals
+        'Mica_Win32_HWND'                  # Windows Terminal Preview
+    )
+    if ($winClass -notin $terminalClasses) { Log "[FOCUS] SKIP hwnd=$hwndVal class=$winClass (not terminal)"; exit }
 
     $minimized = [WinFocus]::IsIconic($hwnd)
 
