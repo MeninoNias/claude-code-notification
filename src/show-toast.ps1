@@ -18,22 +18,45 @@ function Log($msg) {
     } catch {}
 }
 
-# Compute HWND early, before any PS version re-invoke, so the process tree is correct
+# Known terminal process names and bad ancestors that mean "tree walk failed"
+$terminalProcs = @('WindowsTerminal', 'conhost', 'mintty', 'ConEmu', 'ConEmu64', 'Code', 'wezterm-gui', 'alacritty', 'Hyper', 'Tabby')
+$badProcs = @('explorer', 'svchost', 'services', 'wininit', 'csrss', 'lsass', 'winlogon')
+
+# Compute HWND: walk the process tree first
 if ($Hwnd -eq 0) {
     try {
         $p = Get-Process -Id $PID
-        while ($p -and $p.MainWindowHandle -eq [IntPtr]::Zero) {
+        $depth = 0
+        while ($p -and $p.MainWindowHandle -eq [IntPtr]::Zero -and $depth -lt 15) {
+            $depth++
             $ppid = (Get-CimInstance Win32_Process -Filter "ProcessId=$($p.Id)").ParentProcessId
             if (-not $ppid -or $ppid -eq 0) { break }
             $p = Get-Process -Id $ppid -ErrorAction SilentlyContinue
         }
-        if ($p -and $p.MainWindowHandle -ne [IntPtr]::Zero) {
+        if ($p -and $p.MainWindowHandle -ne [IntPtr]::Zero -and $p.ProcessName -notin $badProcs) {
             $Hwnd = $p.MainWindowHandle.ToInt64()
             Log "[TOAST] HWND=$Hwnd proc=$($p.ProcessName) pid=$($p.Id)"
         } else {
-            Log "[TOAST] WARN no HWND found in process tree"
+            Log "[TOAST] Tree walk hit '$($p.ProcessName)' - searching for terminal window"
         }
-    } catch { Log "[TOAST] ERR hwnd: $_" }
+    } catch { Log "[TOAST] ERR tree walk: $_" }
+}
+
+# Fallback: find a running terminal window by process name
+if ($Hwnd -eq 0) {
+    try {
+        foreach ($name in $terminalProcs) {
+            $candidates = Get-Process -Name $name -ErrorAction SilentlyContinue |
+                Where-Object { $_.MainWindowHandle -ne [IntPtr]::Zero }
+            if ($candidates) {
+                $best = $candidates | Select-Object -First 1
+                $Hwnd = $best.MainWindowHandle.ToInt64()
+                Log "[TOAST] FALLBACK HWND=$Hwnd proc=$($best.ProcessName) pid=$($best.Id) title='$($best.MainWindowTitle)'"
+                break
+            }
+        }
+        if ($Hwnd -eq 0) { Log "[TOAST] WARN no terminal window found" }
+    } catch { Log "[TOAST] ERR fallback: $_" }
 }
 
 # PS 7+ can't load WinRT types natively. Re-invoke in PS 5.1 where it works.
