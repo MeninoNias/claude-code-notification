@@ -5,3 +5,6 @@ Thumbs.db
 Desktop.ini
 .vscode/
 .idea/
+
+# Discord webhook URL is a secret — never commit it (only the .example template)
+discord-webhook.txt

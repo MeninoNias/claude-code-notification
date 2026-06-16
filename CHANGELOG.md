@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Optional Discord notifications: mirror Stop / Notification / SubagentStop events to a Discord channel via webhook
+- Webhook URL is read from `~/.claude/discord-webhook.txt` (opt-in; nothing is sent unless the file exists)
+- `discord-webhook.txt.example` template, copied to `~/.claude/` by the installer
+- `-NoDiscord` switch on `show-toast.ps1` to avoid duplicate sends during the PS 7 → 5.1 re-invoke
+
+### Security
+- `discord-webhook.txt` is git-ignored so the webhook secret is never committed
+
 ## [1.0.1] - 2026-04-02
 
 ### Fixed

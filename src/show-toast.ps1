@@ -2,7 +2,8 @@ param(
     [string]$Title,
     [string]$Message,
     [string]$Icon,
-    [long]$Hwnd = 0
+    [long]$Hwnd = 0,
+    [switch]$NoDiscord
 )
 
 $logFile = "$env:USERPROFILE\.claude\toast.log"
@@ -17,6 +18,41 @@ function Log($msg) {
         }
     } catch {}
 }
+
+# Optional Discord notification. Reads the webhook URL from ~/.claude/discord-webhook.txt.
+# If the file is absent or empty, Discord is silently skipped (opt-in feature).
+function Send-Discord($title, $message) {
+    try {
+        $hookFile = "$env:USERPROFILE\.claude\discord-webhook.txt"
+        if (-not (Test-Path $hookFile)) { return }
+        $webhook = (Get-Content $hookFile -Raw).Trim()
+        if (-not $webhook) { return }
+
+        # Strip the "Claude Code -" / "Claude Code Agent -" prefix so the embed
+        # title is just the project name.
+        $embedTitle = ($title -replace '^Claude Code( Agent)?\s*-\s*', '').Trim()
+        if (-not $embedTitle) { $embedTitle = $title }
+
+        $payload = @{
+            username = 'claudio'
+            embeds   = @(@{
+                title       = "$embedTitle"
+                description = "$message"
+                color       = 15571792
+            })
+        } | ConvertTo-Json -Depth 5 -Compress
+
+        $bytes = [Text.Encoding]::UTF8.GetBytes($payload)
+        Invoke-RestMethod -Uri $webhook -Method Post -ContentType 'application/json; charset=utf-8' -Body $bytes -TimeoutSec 10 | Out-Null
+        Log "[DISCORD] OK title='$embedTitle'"
+    } catch {
+        Log "[DISCORD] ERR: $($_.Exception.Message)"
+    }
+}
+
+# Fire the Discord notification once. In PS 7+ this runs before the re-invoke
+# into PS 5.1; the child call gets -NoDiscord so it doesn't send twice.
+if (-not $NoDiscord) { Send-Discord $Title $Message }
 
 # Known terminal process names and bad ancestors that mean "tree walk failed"
 $terminalProcs = @('WindowsTerminal', 'conhost', 'mintty', 'ConEmu', 'ConEmu64', 'Code', 'wezterm-gui', 'alacritty', 'Hyper', 'Tabby')
@@ -67,7 +103,7 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
     $eIcon = $Icon -replace "'", "''"
     $btBase = (Get-Module -ListAvailable BurntToast -ErrorAction SilentlyContinue | Select-Object -First 1).ModuleBase
     $btDir = if ($btBase) { (Split-Path (Split-Path $btBase)) -replace "'", "''" } else { '' }
-    powershell.exe -ExecutionPolicy Bypass -Command "`$env:PSModulePath += ';$btDir'; & '$scriptPath' -Title '$eTitle' -Message '$eMessage' -Icon '$eIcon' -Hwnd $Hwnd"
+    powershell.exe -ExecutionPolicy Bypass -Command "`$env:PSModulePath += ';$btDir'; & '$scriptPath' -Title '$eTitle' -Message '$eMessage' -Icon '$eIcon' -Hwnd $Hwnd -NoDiscord"
     return
 }
 

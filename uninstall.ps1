@@ -88,7 +88,7 @@ if (Test-Path $shortcutPath) {
 
 # --- Remove scripts ---
 Write-Host "`n[4/4] Removing scripts from ~/.claude/..." -ForegroundColor Yellow
-$filesToRemove = @('show-toast.ps1', 'claude-focus.ps1', 'claude-focus.vbs')
+$filesToRemove = @('show-toast.ps1', 'claude-focus.ps1', 'claude-focus.vbs', 'discord-webhook.txt', 'discord-webhook.txt.example')
 foreach ($file in $filesToRemove) {
     $path = Join-Path $claudeDir $file
     if (Test-Path $path) {

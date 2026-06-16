@@ -38,6 +38,7 @@
 - **Permission Required** — notifies when Claude needs user approval to proceed
 - **Subagent Done** — notifies when a background agent completes its work
 - **Click-to-Focus** — click any notification to bring the terminal window to the foreground
+- **Discord Mirror** *(optional)* — mirror the same notifications to a Discord channel via webhook
 - **Zero Background Processes** — uses Windows protocol activation, not persistent listeners
 - **Multi-Terminal** — works with Windows Terminal, VS Code, cmd, and any terminal with a window handle
 - **Dual PowerShell** — supports both PowerShell 5.1 and 7+
@@ -197,6 +198,7 @@ claude-code-notification/
   assets/               # Icon and banner
   config/
     hooks.json          # Hook definitions (merged into settings.json)
+    discord-webhook.txt.example  # Template for the optional Discord webhook
   src/
     show-toast.ps1      # Main notification script
     claude-focus.ps1    # Click-to-focus handler (Win32 API)
@@ -213,6 +215,7 @@ claude-code-notification/
   claude-focus.ps1      # Click-to-focus handler
   claude-focus.vbs      # Hidden launcher
   claude-icon.png       # Notification icon
+  discord-webhook.txt   # Optional: webhook URL enables Discord mirroring
   settings.json         # Claude Code settings (hooks merged here)
 ```
 
@@ -262,6 +265,33 @@ Hooks are stored in `~/.claude/settings.json`. You can edit them directly:
   }
 }
 ```
+
+### Discord Notifications (optional)
+
+The same notifications can be mirrored to a Discord channel. This is **opt-in** — it
+only activates when a webhook file exists, so nothing is sent by default.
+
+**Enable:**
+
+1. In Discord: **Channel settings → Integrations → Webhooks → New Webhook**, then **Copy Webhook URL**.
+2. Save that URL into `~/.claude/discord-webhook.txt`:
+
+   ```powershell
+   'https://discord.com/api/webhooks/XXXX/YYYY' | Set-Content "$env:USERPROFILE\.claude\discord-webhook.txt"
+   ```
+
+   (See `discord-webhook.txt.example` for the expected format.)
+
+That's it — every Stop, Notification, and SubagentStop event now also posts an embed
+to your channel. The embed title is the project name and the description is the message.
+
+**Disable:** delete `~/.claude/discord-webhook.txt`.
+
+> The webhook URL is a **secret** — anyone with it can post to your channel. It lives only
+> in `~/.claude/` and is git-ignored; never commit it.
+
+> Currently the bot name (`claudio`) and embed color are hard-coded in `show-toast.ps1`.
+> Making these configurable is tracked as a planned improvement.
 
 ---
 
