@@ -55,6 +55,7 @@ $filesToCopy = @(
     @{ Src = 'src\claude-focus.ps1';  Dst = 'claude-focus.ps1' }
     @{ Src = 'src\claude-focus.vbs';  Dst = 'claude-focus.vbs' }
     @{ Src = 'assets\claude-icon.png'; Dst = 'claude-icon.png' }
+    @{ Src = 'config\discord-webhook.txt.example'; Dst = 'discord-webhook.txt.example' }
 )
 
 foreach ($file in $filesToCopy) {
@@ -169,6 +170,17 @@ foreach ($hookType in $hookTypes) {
 $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
 Write-Host "  settings.json updated." -ForegroundColor Green
 
+# --- Discord webhook (optional) ---
+Write-Host "`n[+] Discord notifications (optional)..." -ForegroundColor Yellow
+$webhookFile = Join-Path $claudeDir 'discord-webhook.txt'
+if (Test-Path $webhookFile) {
+    Write-Host "  discord-webhook.txt found - Discord notifications are ENABLED." -ForegroundColor Green
+} else {
+    Write-Host "  Discord is OFF (opt-in). To enable, create:" -ForegroundColor Gray
+    Write-Host "    $webhookFile" -ForegroundColor Gray
+    Write-Host "  containing your Discord webhook URL (see discord-webhook.txt.example)." -ForegroundColor Gray
+}
+
 # --- Done ---
 Write-Host "`n=== Installation complete! ===" -ForegroundColor Cyan
 Write-Host @"
@@ -181,6 +193,10 @@ Write-Host @"
     - Hooks:    Stop, Notification, SubagentStop
 
   Click any Claude Code notification to bring the terminal to focus.
+
+  Optional: mirror notifications to Discord by saving your webhook URL to
+  ~/.claude/discord-webhook.txt (see discord-webhook.txt.example).
+
   Run uninstall.ps1 to remove everything.
 
 "@ -ForegroundColor White

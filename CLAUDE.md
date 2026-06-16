@@ -30,7 +30,8 @@ Hook (Stop/Notification/SubagentStop)
 
 | File | Purpose |
 |---|---|
-| `src/show-toast.ps1` | Main notification script. Walks process tree for HWND, builds BurntToast with protocol activation |
+| `src/show-toast.ps1` | Main notification script. Walks process tree for HWND, builds BurntToast with protocol activation. Also mirrors to Discord (opt-in) via webhook |
+| `config/discord-webhook.txt.example` | Template for the optional Discord webhook URL. User copies to `~/.claude/discord-webhook.txt` to enable Discord |
 | `src/claude-focus.ps1` | Click handler. Parses HWND from `claude-focus://` URI, uses multiple Win32 methods to focus window |
 | `src/claude-focus.vbs` | Invisible wrapper. Launches claude-focus.ps1 via `WScript.Shell.Run` with window style 0 |
 | `config/hooks.json` | Hook definitions for Stop, Notification, SubagentStop. Merged into user's settings.json |
@@ -52,6 +53,13 @@ This is the most critical constraint. Key differences:
 - **WinRT types**: Load natively in PS 5.1, fail in PS 7+. Always use inner try/catch with BurntToast fallback
 - **ConvertFrom-Json**: Returns PSCustomObject in PS 5.1, supports `-AsHashtable` only in PS 7+. Use PSCustomObject for both
 - **Get-Process .Parent**: Only available in PS 7+. Use `Get-CimInstance Win32_Process` for parent PID in both versions
+
+## Discord Notifications (optional)
+
+- **Opt-in**: `show-toast.ps1` only posts to Discord when `~/.claude/discord-webhook.txt` exists and is non-empty. Absent file = silent skip.
+- **Secret**: the webhook URL must never be committed — `discord-webhook.txt` is git-ignored; only `discord-webhook.txt.example` is tracked.
+- **No double-send**: in PS 7+ the script sends Discord once, then re-invokes itself in PS 5.1 with `-NoDiscord` so the toast path doesn't re-post.
+- **Never block the hook**: the Discord call is wrapped in try/catch with a `-TimeoutSec`; a Discord failure must not stop the toast.
 
 ## Install Script Rules
 
